@@ -316,7 +316,7 @@ x = 0
 
 ### significant
 
-- significat
+- significant
 	- signify 标识
 	- cant 形容词
 	- 标志性的

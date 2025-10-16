@@ -411,5 +411,71 @@ for frame_num in range(1, 101):  # 从第1帧到第125帧
     bpy.ops.render.render(write_still=True)
 ```
 
+### 律动效果 人浪
+
+```
+import bpy
+import math
+
+# 清除场景中的所有对象
+bpy.ops.object.select_all(action='SELECT')
+bpy.ops.object.delete()
+
+# 设置全局参数
+total_frames = 250  # 动画总帧数
+jump_height = 3.0   # 跳动高度
+rotation_amount = math.radians(90)  # 每次跳动旋转角度
+
+# 创建5个正方形（立方体）并设置跳动动画
+for i in range(5):
+    # 创建立方体
+    bpy.ops.mesh.primitive_cube_add(size=2.0 - i * 0.3, location=(0, 0, 10 - i * 3))
+    cube = bpy.context.active_object
+    cube.name = f"Cube_{i}"
+    
+    # 设置材质
+    material = bpy.data.materials.new(name=f"Material_{i}")
+    material.use_nodes = True
+    principled_bsdf = material.node_tree.nodes.get('Principled BSDF')
+    
+    if principled_bsdf:
+        # 设置不同颜色
+        colors = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1), (0, 1, 1, 1)]
+        principled_bsdf.inputs['Base Color'].default_value = colors[i]
+        principled_bsdf.inputs['Roughness'].default_value = 0.3  # 稍微有光泽
+    
+    cube.data.materials.append(material)
+    
+    # 设置跳动和旋转动画
+    frames_per_jump = 60 - i * 8  # 每个立方体跳动周期不同
+    jump_offset = i * 15  # 每个立方体跳动的时间偏移
+    
+    # 设置关键帧动画 - 位置和旋转
+    for cycle in range(total_frames // frames_per_jump + 1):
+        frame = cycle * frames_per_jump + jump_offset
+        
+        if frame > total_frames:
+            break
+        
+        # 起始位置（底部）
+        cube.location.z = 10 - i * 3
+        cube.rotation_euler = (0, 0, 0)
+        cube.keyframe_insert(data_path="location", frame=frame)
+        cube.keyframe_insert(data_path="rotation_euler", frame=frame)
+        
+        # 中间位置（顶部）
+        mid_frame = frame + frames_per_jump // 2
+        cube.location.z = 10 - i * 3 + jump_height
+        cube.rotation_euler = (rotation_amount * (i+1), rotation_amount * (i+1), rotation_amount * (i+1))
+        cube.keyframe_insert(data_path="location", frame=mid_frame)
+        cube.keyframe_insert(data_path="rotation_euler", frame=mid_frame)
+        
+        # 结束位置（底部）
+        end_frame = frame + frames_per_jump
+        if end_frame <= total_frames:
+            cube.location.z = 10
+
+```
+
 ### 总结 🤔
 - 我们下次再说！👋
